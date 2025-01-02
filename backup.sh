@@ -18,13 +18,13 @@ else
     exit 1
 fi
 
-# Copy new files into the /var/www folder
-echo "[$DATE] Copying new files from $SOURCE_FOLDER to $TARGET_FOLDER" | tee -a "$LOG_FILE"
+# Sync new files into the /var/www folder
+echo "[$DATE] Syncing files from $SOURCE_FOLDER to $TARGET_FOLDER" | tee -a "$LOG_FILE"
 if [ -d "$SOURCE_FOLDER" ]; then
-    cp -R "$SOURCE_FOLDER"/* "$TARGET_FOLDER" && \
-    echo "[$DATE] Files copied successfully." | tee -a "$LOG_FILE"
+    rsync -avh --delete "$SOURCE_FOLDER"/ "$TARGET_FOLDER"/ && \
+    echo "[$DATE] Sync completed successfully." | tee -a "$LOG_FILE"
 else
-    echo "[$DATE] Error: $SOURCE_FOLDER does not exist. Aborting file copy." | tee -a "$LOG_FILE"
+    echo "[$DATE] Error: $SOURCE_FOLDER does not exist. Aborting sync." | tee -a "$LOG_FILE"
     exit 1
 fi
 
