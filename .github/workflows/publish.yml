@@ -1,0 +1,38 @@
+name: Deploy to DigitalOcean
+
+on:
+  release:
+    types: [created]
+  push:
+    tags:
+      - '*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+          
+      - name: Deploy to DigitalOcean
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+        run: |
+          sshpass -e rsync -avz --exclude='.git*' \
+            --exclude='node_modules' \
+            --delete -e "ssh -o StrictHostKeyChecking=no" ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.DROPLET_HOST }}:${{ secrets.DEPLOY_PATH }}
+            
+      - name: Post-deploy commands
+        env:
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.DROPLET_HOST }} '
+            cd ${{ secrets.DEPLOY_PATH }}
+            # Add your post-deploy commands here, for example:
+            # npm install
+            # pm2 restart app
+          '
